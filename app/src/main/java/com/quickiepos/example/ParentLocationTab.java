@@ -59,6 +59,17 @@ import java.util.Map;
 
 public class ParentLocationTab extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
+    /*-----------------------------------------------------------------------------
+    |  Class: ParentLocationTab
+    |
+    |  Purpose: A tab that will enable the parent to request for help and get assigned the
+    |           a paediatrician closest to the Parent location
+    |
+    |  Note: GeoFire will be used to get the location and update it in the database
+    |
+    |
+    *---------------------------------------------------------------------------*/
+
     //Declare class variables
     MapView mMapView;
 
@@ -93,7 +104,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
       |
       |  Note:
       |	  onMapReady : 
-      |	  onConnected :
+      |	  onConnected : When the map is called and everything is ready to start working.
       |	  onConnectionSuspended :
       |	  onConnectionFailed :
       |	  onLocationChanged :
@@ -108,6 +119,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        //Create a request to get the user's location from second to second
         
     }
 

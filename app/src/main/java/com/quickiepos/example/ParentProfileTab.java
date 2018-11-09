@@ -36,18 +36,18 @@ import java.util.Map;
 
 public class ParentProfileTab extends Fragment {
 
-            /*-----------------------------------------------------------------------------
-            |  Class: ParentProfileTab
-            |
-            |  Purpose: A tab that initializes the Profile fragment of the user to enable
-            |            reading and editing of the user's details
-            |
-            |  Note: The following key methods will be used
-            |          getUserInfo() : to get the user's information
-            |          saveUserInformation() : to save the user's new details
-            |
-            |
-            *---------------------------------------------------------------------------*/
+    /*-----------------------------------------------------------------------------
+    |  Class: ParentProfileTab
+    |
+    |  Purpose: A tab that initializes the Profile fragment of the user to enable
+    |            reading and editing of the user's details
+    |
+    |  Note: The following key methods will be used
+    |          getUserInfo() : to get the user's information
+    |          saveUserInformation() : to save the user's new details
+    |
+    |
+    *---------------------------------------------------------------------------*/
 
     //Declare class variables
     private EditText user_nameField;

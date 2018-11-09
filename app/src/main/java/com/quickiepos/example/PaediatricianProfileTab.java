@@ -1,6 +1,7 @@
 package com.quickiepos.example;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -34,18 +36,18 @@ import java.util.Map;
 
 public class PaediatricianProfileTab extends Fragment {
 
-            /*-----------------------------------------------------------------------------
-            |  Class: PaediatricianProfileTab
-            |
-            |  Purpose: A tab that initializes the Profile fragment of the user to enable
-            |            reading and editing of the user's details
-            |
-            |  Note: The following key methods will be used
-            |          getUserInfo() : to get the user's information
-            |          saveUserInformation() : to save the user's new details
-            |
-            |
-            *---------------------------------------------------------------------------*/
+    /*-----------------------------------------------------------------------------
+    |  Class: PaediatricianProfileTab
+    |
+    |  Purpose: A tab that initializes the Profile fragment of the user to enable
+    |            reading and editing of the user's details
+    |
+    |  Note: The following key methods will be used
+    |          getUserInfo() : to get the user's information
+    |          saveUserInformation() : to save the user's new details
+    |
+    |
+    *---------------------------------------------------------------------------*/
 
     //Declare class variables
     private EditText user_nameField;
@@ -62,6 +64,7 @@ public class PaediatricianProfileTab extends Fragment {
     private String user_email;
     private String user_profileImage;
 
+    private ProgressDialog progressDialog;
     private Uri resultUri;
 
     @Override
@@ -75,6 +78,7 @@ public class PaediatricianProfileTab extends Fragment {
         user_phoneField = (EditText) view.findViewById(R.id.user_phoneField);
         user_profileImageField = (ImageView) view.findViewById(R.id.profileImage);
         save_button = (Button) view.findViewById(R.id.confirm);
+        progressDialog = new ProgressDialog(getActivity());
 
         mAuth = FirebaseAuth.getInstance();
         user_id = mAuth.getCurrentUser().getUid();
@@ -82,6 +86,10 @@ public class PaediatricianProfileTab extends Fragment {
         //Create a database reference to get the logged in user details
         current_user_db = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(user_id);
 
+        //Use the progressDialog so as to avoid user wait as Firebase loads
+        progressDialog.setMessage("Loading...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
         getUserInfo();
 
         //Set an onClick listener on the image to enable the user to change profile details
@@ -99,6 +107,9 @@ public class PaediatricianProfileTab extends Fragment {
         save_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressDialog.setMessage("Loading...");
+                progressDialog.setCancelable(false);
+                progressDialog.show();
                 saveUserInformation();
             }
         });
@@ -119,6 +130,8 @@ public class PaediatricianProfileTab extends Fragment {
     *---------------------------------------------------------------------------*/
 
     private  void getUserInfo(){
+
+
         current_user_db.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -145,14 +158,20 @@ public class PaediatricianProfileTab extends Fragment {
 
                         Glide.with(getActivity()).load(user_profileImage).into(user_profileImageField);
                     }
+
+                    progressDialog.dismiss();
+                    Toast.makeText(getActivity(), "Use details loaded!", Toast.LENGTH_SHORT).show();
                 }
+
+                progressDialog.dismiss();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(getActivity(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
 
@@ -186,6 +205,10 @@ public class PaediatricianProfileTab extends Fragment {
 
         current_user_db.updateChildren(userInfo);
 
+        progressDialog.dismiss();
+        Toast.makeText(getActivity(),"Successful changed user details", Toast.LENGTH_SHORT).show();
+
+
         //Checks to see if the user has uploaded a new image
         if (resultUri != null) {
             //Create a storage reference to the path you want to store the image
@@ -215,8 +238,10 @@ public class PaediatricianProfileTab extends Fragment {
 
                             current_user_db.updateChildren(newImage);
 
+                            progressDialog.dismiss();
+                            Toast.makeText(getActivity(),"Successful changed user details", Toast.LENGTH_SHORT).show();
+
                             return;
-                        } else {
                         }
                     }
                 }
