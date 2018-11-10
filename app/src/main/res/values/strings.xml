@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">example</string>
+    <string name="title_activity_texample">Texample</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_parent_map">TIBA APP</string>
+    <string name="title_activity_example_maps">Map</string>
+</resources>
