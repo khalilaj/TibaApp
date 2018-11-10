@@ -50,6 +50,18 @@ import java.util.Map;
 
 public class ParentLocationTab extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
+      /*-----------------------------------------------------------------------------
+       |  Class: ParentLocationTab
+       |
+       |  Purpose: A tab that initializes the mapView of the parent to enable
+       |            calling for help to the closest paediatrician and viewing all available hospitals
+       |
+       |  Note: Use of GeoFire to query and save location details to the Firebase database
+       |
+       |
+       *---------------------------------------------------------------------------*/
+
+    //Declare class variables
     private GoogleMap map;
     GoogleApiClient googleApiClient;
     Location lastLocation;
@@ -69,8 +81,10 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.parent_location_tab, container, false);
 
+        //Initialize fragment variables
         destinationLatLng = new LatLng(0.0,0.0);
         parentRequest = (Button)  rootView.findViewById(R.id.request);
         paediatricianInfo = (LinearLayout) rootView.findViewById(R.id.paediatricianInfo);
@@ -121,6 +135,19 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
         return rootView;
     }
 
+   /*--------------------------------------------------------------------------------------------------------
+   |  Function(s) getPaediatricianLocation, getPaediatricianInfo, getClosestPaediatrician,
+   |
+   |  Purpose: Assign a paediatrician to a parent and enable sharing of information between the two
+   |
+   |  Note:
+   |	  getPaediatricianLocation : Get the closest paediatrician location
+   |	  getAssignedParentConsultLocation : Assigns a consultation to the paediatrician with the parent request
+   |	  getAssignedParentInfo : Gives the parent the paediatrician information
+   |
+   |
+   *-----------------------------------------------------------------------------------------------------------*/
+
     private int radius = 1;
     private Boolean paediatricianFound = false;
     private String paediatricianFoundID;
@@ -143,13 +170,13 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
                     DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianFoundID).child("parentRequest");
                     String parentId = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     HashMap map = new HashMap();
-                    map.put("parentRideId", parentId);
+                    map.put("parentConsultId", parentId);
                     map.put("destination", destination);
                     paediatricianRef.updateChildren(map);
 
                     getPaediatricianLocation();
                     getPaediatricianInfo();
-                    getHasRideEnded();
+                    getHasConsultEnded();
                     parentRequest.setText("Looking for paediatrician Location....");
 
 
@@ -181,6 +208,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
             }
         });
     }
+
 
     private Marker paediatricianMarker;
     private DatabaseReference paediatricianLocationRef;
@@ -224,8 +252,6 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
 
 
                     }
-
-
 
                     paediatricianMarker = ParentLocationTab.this.map.addMarker(new MarkerOptions().position(paediatricianLatLng).title("your paediatrician").icon(BitmapDescriptorFactory.fromResource(R.drawable.doctor_icon)));
                 }
@@ -272,9 +298,17 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
             }
         });
     }
+    /*------------------------------------------------------------------
+  |  Function(s) getHasConsultEnded, endConsult
+  |
+  |  Purpose:  Check to see if consultation has ended and end a consultation
+  |
+  *-------------------------------------------------------------------*/
+
     private DatabaseReference consultHasEndedRef;
     private ValueEventListener paediatricianHasEndedRefListener;
-    private void getHasRideEnded(){
+
+    private void getHasConsultEnded(){
         consultHasEndedRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianFoundID).child("parentRequest").child("parentConsultId");
         paediatricianHasEndedRefListener = consultHasEndedRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -325,6 +359,22 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
 
 
     }
+
+
+    /*-----------------------------------------------------------------------------------------
+    |  Function(s) onMapReady, onConnected, onConnectionSuspended, onConnectionSuspended
+    |
+    |  Purpose:  Map functions to periodically update the user's location
+    |
+    |  Note:
+    |	  onMapReady : Get the map ready for the fragment
+    |	  onConnected : When the map is called and everything is ready to start working.
+    |	  onConnectionSuspended : When the location connection has been paused
+    |	  onConnectionFailed : When the location connection has failed
+    |	  onLocationChanged : Periodically updates the map when a location has been changed
+    |
+    *-------------------------------------------------------------------------------------------*/
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
@@ -392,6 +442,22 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }
 
+
+    /*------------------------------------------------------------------
+    |  Function(s) onResume, onPause, onDestroy, onLowMemory
+    |
+    |  Purpose:  Adapt the mapView with changes that are going on with the fragment using the main
+    |            fragment functions.
+    |
+    |  Note:
+    |	  onResume : When the fragment has been resumed resume MapView
+    |	  onPause : When the fragment has been pause pause the MapView
+    |	  onDestroy : When the fragment has been destroyed also destroy the MapView
+    |	  onLowMemory : When the phone is on low memory change the MapView to be more battery conscious
+    |	  onStop : When the user gets out of the activity the paediatrician is considered unavailable
+    |
+    |
+    *-------------------------------------------------------------------*/
 
 
     @Override

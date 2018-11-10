@@ -10,7 +10,6 @@ import android.content.res.Resources;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -67,7 +66,18 @@ import java.util.Map;
 
 public class PaediatricianLocationTab extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener, RoutingListener {
 
+        /*-----------------------------------------------------------------------------
+       |  Class: PaediatricianLocationTab
+       |
+       |  Purpose: A tab that initializes the mapView of the paediatrician to enable
+       |           the user to respond to parent S.O.S requests
+       |
+       |  Note: Use of GeoFire to query and save location details to the Firebase database
+       |
+       |
+       *---------------------------------------------------------------------------*/
 
+    //Declare class variables
     private FusedLocationProviderClient fusedLocationProviderClient;
     private GoogleMap map;
     GoogleApiClient googleApiClient;
@@ -91,9 +101,10 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.paediatrician_location_tab, container, false);
 
-
+        //Initialize fragment variables
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
         polylines = new ArrayList<>();
         consult_status = rootView.findViewById(R.id.consultStatus);
@@ -106,7 +117,8 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
 
         call_parent = rootView.findViewById(R.id.call);
 
-        getAssignedparent();
+        //Called to see if any Parent has been assigned to the Paediatrician
+        getAssignedParent();
 
         consult_status.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +127,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
                     case 1:
 
                         status = 2;
-                        erasePolylines();
+                        erasePolyLines();
 
                         consult_status.setText("Complete Consultation");
 
@@ -154,75 +166,19 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     }
 
 
-
-    private void getAssignedparent(){
-        String paediatricianId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assignedparentRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianId).child("parentRequest").child("parentConsultId");
-        assignedparentRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    status = 1;
-                    parentId = dataSnapshot.getValue().toString();
-                    getAssignedParentConsultLocation();
-                    getAssignedparentDestination();
-                    getAssignedparentInfo();
-                }else{
-
-
-                    endConsult();
-
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-    }
-
-    Marker consultMarker;
-    private DatabaseReference assignedParentConsultLocationRef;
-    private ValueEventListener assignedParentConsultLocationRefListener;
-    private void getAssignedParentConsultLocation(){
-        assignedParentConsultLocationRef = FirebaseDatabase.getInstance().getReference().child("parentRequest").child(parentId).child("l");
-        assignedParentConsultLocationRefListener = assignedParentConsultLocationRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists() && !parentId.equals("")){
-                    List<Object> map = (List<Object>) dataSnapshot.getValue();
-                    double locationLat = 0;
-                    double locationLng = 0;
-                    if(map.get(0) != null){
-                        locationLat = Double.parseDouble(map.get(0).toString());
-                    }
-                    if(map.get(1) != null){
-                        locationLng = Double.parseDouble(map.get(1).toString());
-                    }
-                    LatLng consultLatLng = new LatLng(locationLat,locationLng);
-                    consultMarker = PaediatricianLocationTab.this.map.addMarker(new MarkerOptions().position(consultLatLng).title("Consultation last location").icon(BitmapDescriptorFactory.fromResource(R.mipmap.pickup_marker)));
-                    getRouteToMarker(consultLatLng);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-    }
-
-    private void getRouteToMarker(LatLng consultLatLng) {
-
-        Routing routing = new Routing.Builder()
-                .key("AIzaSyDJRGrs2-HETD0U3khyb2lAf3axA-CBl9I")
-                .travelMode(AbstractRouting.TravelMode.DRIVING)
-                .withListener(this)
-                .alternativeRoutes(false)
-                .waypoints(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), consultLatLng)
-                .build();
-        routing.execute();
-
-    }
+      /*-----------------------------------------------------------------------------------------
+      |  Function(s) onMapReady, onConnected, onConnectionSuspended, onConnectionSuspended
+      |
+      |  Purpose:  Map functions to periodically update the user's location
+      |
+      |  Note:
+      |	  onMapReady : Get the map ready for the fragment
+      |	  onConnected : When the map is called and everything is ready to start working.
+      |	  onConnectionSuspended : When the location connection has been paused
+      |	  onConnectionFailed : When the location connection has failed
+      |	  onLocationChanged : Periodically updates the map when a location has been changed
+      |
+      *-------------------------------------------------------------------------------------------*/
 
 
     @Override
@@ -352,33 +308,17 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
         }
     };
 
-    private void checkLocationPermission() {
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle("give permission")
-                        .setMessage("give permission message")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                            }
-                        })
-                        .create()
-                        .show();
-            }
-            else{
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            }
-        }
-    }
 
-
-    private void connectPaediatrician(){
-        checkLocationPermission();
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
-        map.setMyLocationEnabled(true);
-    }
+   /*------------------------------------------------------------------
+   |  Function: disconnectPaediatrician
+   |
+   |  Purpose:  Remove Paediatrician from paediatriciansAvailable table
+   |            if the user is not active in the Application
+   |
+   |  Note: Application only considers paediatricians active in the application as available
+   |
+   |
+   *-------------------------------------------------------------------*/
 
     private void disconnectPaediatrician(){
         if(fusedLocationProviderClient != null){
@@ -391,18 +331,77 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
         geoFire.removeLocation(userId);
     }
 
+    /*--------------------------------------------------------------------------------------------------------
+    |  Function(s) getAssignedParent, getAssignedParentConsultLocation, getAssignedParentInfo,
+    |
+    |  Purpose: Assign a parent to a paediatrician
+    |
+    |  Note:
+    |	  getAssignedParent : Assigns a parent request to the closest paediatrician
+    |	  getAssignedParentConsultLocation : Assigns a consultation to the paediatrician with the parent request
+    |	  getAssignedParentInfo : Gives the paediatrician the parent information
+    |
+    |
+    *-----------------------------------------------------------------------------------------------------------*/
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (!isLoggingOut){
+    private void getAssignedParent(){
+        String paediatricianId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference assignedParentRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianId).child("parentRequest").child("parentConsultId");
+        assignedParentRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    status = 1;
+                    parentId = dataSnapshot.getValue().toString();
+                    getAssignedParentConsultLocation();
+                    getAssignedParentInfo();
+                }else{
 
-            disconnectPaediatrician();
-        }
 
+                    endConsult();
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
     }
 
-    private void getAssignedparentInfo(){
+
+    Marker consultMarker;
+    private DatabaseReference assignedParentConsultLocationRef;
+    private ValueEventListener assignedParentConsultLocationRefListener;
+
+    private void getAssignedParentConsultLocation(){
+        assignedParentConsultLocationRef = FirebaseDatabase.getInstance().getReference().child("parentRequest").child(parentId).child("l");
+        assignedParentConsultLocationRefListener = assignedParentConsultLocationRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists() && !parentId.equals("")){
+                    List<Object> map = (List<Object>) dataSnapshot.getValue();
+                    double locationLat = 0;
+                    double locationLng = 0;
+                    if(map.get(0) != null){
+                        locationLat = Double.parseDouble(map.get(0).toString());
+                    }
+                    if(map.get(1) != null){
+                        locationLng = Double.parseDouble(map.get(1).toString());
+                    }
+                    LatLng consultLatLng = new LatLng(locationLat,locationLng);
+                    consultMarker = PaediatricianLocationTab.this.map.addMarker(new MarkerOptions().position(consultLatLng).title("Consultation last location").icon(BitmapDescriptorFactory.fromResource(R.mipmap.pickup_marker)));
+                    getRouteToMarker(consultLatLng);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    private void getAssignedParentInfo(){
         parentInfo.setVisibility(View.VISIBLE);
         call_parent.setVisibility(View.VISIBLE);
         parentDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child("parents").child(parentId);
@@ -437,44 +436,14 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
 
     }
 
-    private void getAssignedparentDestination(){
-        String paediatricianId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assignedparentRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianId).child("parentRequest");
-        assignedparentRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
 
-                    if (map.get("destination") != null){
-                        destination = map.get("destination").toString();
-                        parentDestination.setText("Destination: "+ destination);
-
-                    }
-                    else {
-                        parentDestination.setText("No Destination defined");
-                    }
-
-                    Double destinationLat = 0.0;
-                    Double destinationLng = 0.0;
-
-                    if (map.get("destinationLat")!= null){
-                        destinationLat = Double.valueOf(map.get("destinationLat").toString());
-                    }
-
-                    if (map.get("destinationLng")!= null){
-                        destinationLng = Double.valueOf(map.get("destinationLng").toString());
-
-                        destinationLatLng = new LatLng(destinationLat, destinationLng);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-    }
+     /*------------------------------------------------------------------
+        |  Function: makeCall
+        |
+        |  Purpose:  Enables paediatrician to make a call when assigned the parent phone number
+        |
+        |
+        *-------------------------------------------------------------------*/
 
     private void makeCall(){
         String number = parentPhone.getText().toString();
@@ -493,6 +462,40 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
             Toast.makeText(getActivity(), "Phone number not provided", Toast.LENGTH_SHORT).show();
         }
     }
+
+   /*------------------------------------------------------------------
+   |  Function(s) checkLocationPermission, onRequestPermissionsResult
+   |
+   |  Purpose: This methods check and request permissions required for the application to run
+   |
+   |  Note:
+   |	  checkLocationPermission : Checks if the location permission has been granted for location
+   |	  onRequestPermissionsResult : requests for permission for making a phone call
+   |
+   |
+   *-------------------------------------------------------------------*/
+
+    private void checkLocationPermission() {
+        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle("give permission")
+                        .setMessage("give permission message")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                            }
+                        })
+                        .create()
+                        .show();
+            }
+            else{
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CALL) {
@@ -502,6 +505,31 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
                 Toast.makeText(getActivity(), "Permission DENIED", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    /*------------------------------------------------------------------
+    |  Function(s) getRouteToMarker, onRoutingFailure, onRoutingStart, onRoutingSuccess
+    |
+    |  Purpose:  Draw the route between the parent and paediatrician
+    |
+    |  Note:
+    |	  getRouteToMarker : get the route to marker
+    |	  onRoutingFailure : Responds when routing fails
+    |	  onRoutingStart : When routing starts
+    |	  onRoutingSuccess : When routing was successful
+    |
+    *-------------------------------------------------------------------*/
+    private void getRouteToMarker(LatLng consultLatLng) {
+
+          Routing routing = new Routing.Builder()
+                  .key("AIzaSyDJRGrs2-HETD0U3khyb2lAf3axA-CBl9I")
+                  .travelMode(AbstractRouting.TravelMode.DRIVING)
+                  .withListener(this)
+                  .alternativeRoutes(false)
+                  .waypoints(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), consultLatLng)
+                  .build();
+          routing.execute();
+
     }
 
     @Override
@@ -551,17 +579,25 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     public void onRoutingCancelled() {
 
     }
-    private void erasePolylines(){
+
+    private void erasePolyLines(){
         for (Polyline line: polylines){
             line.remove();
         }
         polylines.clear();
     }
 
+    /*------------------------------------------------------------------
+    |  Function(s) endConsult, recordConsult
+    |
+    |  Purpose:  Record and end consultations
+    |
+    *-------------------------------------------------------------------*/
+
     private  void endConsult(){
 
         consult_status.setText("pick parent");
-        erasePolylines();
+        erasePolyLines();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 
@@ -592,6 +628,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
 
 
     }
+
     private void recordConsult(){
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -619,6 +656,32 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     private Long getCurrentTimestamp() {
         Long timestamp = System.currentTimeMillis()/1000;
         return timestamp;
+    }
+
+    /*------------------------------------------------------------------
+    |  Function(s) onResume, onPause, onDestroy, onLowMemory
+    |
+    |  Purpose:  Adapt the mapView with changes that are going on with the fragment using the main
+    |            fragment functions.
+    |
+    |  Note:
+    |	  onResume : When the fragment has been resumed resume MapView
+    |	  onPause : When the fragment has been pause pause the MapView
+    |	  onDestroy : When the fragment has been destroyed also destroy the MapView
+    |	  onLowMemory : When the phone is on low memory change the MapView to be more battery conscious
+    |	  onStop : When the user gets out of the activity the paediatrician is considered unavailable
+    |
+    |
+    *-------------------------------------------------------------------*/
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (!isLoggingOut){
+
+            disconnectPaediatrician();
+        }
+
     }
 
     @Override
