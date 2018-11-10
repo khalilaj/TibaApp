@@ -419,12 +419,12 @@ public class DriverMapsActivity extends FragmentActivity implements OnMapReadyCa
                     switch (customerId){
                         case "":
                             geoFireWorking.removeLocation(userId);
-                            geoFireAvailable.setLocation(userId, new GeoLocation(location.getLatitude(), location.getLongitude()));
+                            geoFireAvailable.setLocation(userId, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
                             break;
 
                         default:
                             geoFireAvailable.removeLocation(userId);
-                            geoFireWorking.setLocation(userId, new GeoLocation(location.getLatitude(), location.getLongitude()));
+                            geoFireWorking.setLocation(userId, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
                             break;
                     }
                 }

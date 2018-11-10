@@ -1,14 +1,118 @@
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"  >
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
     <com.google.android.gms.maps.MapView
-        android:id="@+id/paediatrician_map"
+        android:id="@+id/map1"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/parentInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="70dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:hapticFeedbackEnabled="true"
+        android:orientation="horizontal"
+        android:visibility="visible"
+
+        >
+
+
+        <ImageView
+            android:id="@+id/parentProfileimage"
+            android:layout_width="100dp"
+            android:layout_height="156dp"
+            android:padding="0dp"
+            android:src="@drawable/person_join" />
+
+        <LinearLayout
+            android:layout_width="258dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingLeft="40sp">
+
+            <TextView
+                android:id="@+id/parentName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:padding="5dp"
+                android:textSize="20sp"
+
+                />
+
+            <TextView
+                android:id="@+id/parentPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:padding="5dp"
+                android:textSize="20sp"
+
+                />
+
+            <TextView
+                android:id="@+id/parentdestination"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+
+                />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="63dp"
+        android:layout_gravity="bottom">
+
+
+        <Button
+            android:id="@+id/call"
+            android:layout_width="106dp"
+
+            android:layout_height="54dp"
+
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:drawableLeft="@drawable/phone"
+            android:text="Call"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.923"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <Button
+            android:id="@+id/consultStatus"
+            android:layout_width="200dp"
+            android:layout_height="54dp"
+
+            android:layout_marginEnd="8dp"
+
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Go to Parent "
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.042"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+    </android.support.constraint.ConstraintLayout>
 
 
 </FrameLayout>

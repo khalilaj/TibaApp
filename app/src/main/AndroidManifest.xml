@@ -30,10 +30,11 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".UserOptionsActivity" />
         <activity android:name=".ParentLogInActivity" />
-        <activity android:name=".DriverMapsActivity" />
-        <activity android:name=".CustomerMapsActivity" />
         <activity android:name=".PaediatricianLogInActivity" />
-        <activity android:name=".PaediatricianMainActivity" />
+        <activity
+            android:name=".PaediatricianMainActivity"
+            android:label="@string/title_activity_parent_map"
+            />
         <activity
             android:name=".ParentMainActivity"
             android:label="@string/title_activity_parent_map" />
