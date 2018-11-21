@@ -18,7 +18,9 @@
         android:orientation="vertical"
 
         android:layout_gravity="bottom">
+
         <LinearLayout
+            android:id="@+id/paediatricianInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
@@ -27,8 +29,6 @@
             android:layout_marginRight="10dp"
             android:background="@color/colorPrimaryDark"
             android:hapticFeedbackEnabled="true"
-            android:id="@+id/paediatricianInfo"
-            android:layout_margin="30dp"
             android:orientation="horizontal"
             android:visibility="gone">
 
@@ -44,21 +44,21 @@
                 android:orientation="vertical"
                 android:paddingLeft="40sp">
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/paediatricianName"
                     android:textColor="@color/black"
                     android:paddingBottom="10sp"
                     android:paddingTop="20sp"/>
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/paediatricianPhone"
                     android:paddingBottom="10sp"
                     android:textColor="@color/black"
                     android:paddingTop="20sp"/>
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
 
                     android:textColor="@color/black"

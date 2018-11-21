@@ -18,12 +18,10 @@
         android:layout_marginBottom="70dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:background="@color/colorPrimary"
         android:hapticFeedbackEnabled="true"
         android:orientation="horizontal"
-        android:visibility="visible"
-
-        >
-
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/parentProfileimage"
@@ -40,29 +38,23 @@
 
             <TextView
                 android:id="@+id/parentName"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
                 android:padding="5dp"
+                android:textColor="#fff"
                 android:textSize="20sp"
 
                 />
 
             <TextView
                 android:id="@+id/parentPhone"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textColor="@color/black"
                 android:layout_marginBottom="20dp"
-                android:padding="5dp"
                 android:textSize="20sp"
-
-                />
-
-            <TextView
-                android:id="@+id/parentdestination"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
 
                 />
 
@@ -105,7 +97,7 @@
 
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Go to Parent "
+            android:text="Start Consultation"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.042"

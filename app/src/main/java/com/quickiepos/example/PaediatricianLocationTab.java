@@ -64,7 +64,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PaediatricianLocationTab extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener, RoutingListener {
+public class PaediatricianLocationTab extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
         /*-----------------------------------------------------------------------------
        |  Class: PaediatricianLocationTab
@@ -87,16 +87,12 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     private Button call_parent, consult_status;
     private LinearLayout parentInfo;
     private ImageView parentProfileImage;
-    private TextView parentName, parentPhone, parentDestination;
-    private List<Polyline> polylines;
+    private TextView parentName, parentPhone;
     private int status = 0;
-    private String parentId = "", destination;
-    private LatLng destinationLatLng, consultLatLng;
-    private Boolean isLoggingOut = false;
+    private String parentId = "";
+    LatLng consultLatLng;
     private DatabaseReference parentDatabase;
-    private float consultTime;
     private static final int REQUEST_CALL = 1;
-    private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
     private static final String TAG = ParentLocationTab.class.getSimpleName();
 
     @Override
@@ -106,13 +102,11 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
 
         //Initialize fragment variables
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-        polylines = new ArrayList<>();
         consult_status = rootView.findViewById(R.id.consultStatus);
         parentInfo = (LinearLayout) rootView.findViewById(R.id.parentInfo);
         parentName = (TextView) rootView.findViewById(R.id.parentName);
         parentPhone = (TextView) rootView.findViewById(R.id.parentPhone);
 
-        parentDestination = (TextView) rootView.findViewById(R.id.parentdestination);
         parentProfileImage = rootView.findViewById(R.id.parentProfileimage);
 
         call_parent = rootView.findViewById(R.id.call);
@@ -125,10 +119,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
             public void onClick(View v) {
                 switch(status){
                     case 1:
-
                         status = 2;
-                        erasePolyLines();
-
                         consult_status.setText("Complete Consultation");
 
                         break;
@@ -219,14 +210,9 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     public void onLocationChanged(Location location) {
         if(getActivity()!=null){
 
-            if(!parentId.equals("") && this.lastLocation !=null && location != null){
-                consultTime += this.lastLocation.distanceTo(location)/1000;
-            }
             this.lastLocation = location;
             LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
             map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-
-            map.animateCamera(CameraUpdateFactory.zoomTo(16));
 
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             DatabaseReference refAvailable = FirebaseDatabase.getInstance().getReference("paediatriciansAvailable");
@@ -276,15 +262,10 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
             for(Location location : locationResult.getLocations()){
                 if(getActivity()!=null){
 
-                    if(!parentId.equals("") && PaediatricianLocationTab.this.lastLocation !=null && location != null){
-                        consultTime += PaediatricianLocationTab.this.lastLocation.distanceTo(location)/1000;
-                    }
                     PaediatricianLocationTab.this.lastLocation = location;
-
 
                     LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
                     map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                    map.animateCamera(CameraUpdateFactory.zoomTo(11));
 
                     String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     DatabaseReference refAvailable = FirebaseDatabase.getInstance().getReference("paediatriciansAvailable");
@@ -346,7 +327,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
 
     private void getAssignedParent(){
         String paediatricianId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assignedParentRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianId).child("parentRequest").child("parentConsultId");
+        DatabaseReference assignedParentRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(paediatricianId).child("parentRequest").child("parentConsultId");
         assignedParentRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -356,10 +337,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
                     getAssignedParentConsultLocation();
                     getAssignedParentInfo();
                 }else{
-
-
                     endConsult();
-
                 }
             }
 
@@ -389,9 +367,8 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
                     if(map.get(1) != null){
                         locationLng = Double.parseDouble(map.get(1).toString());
                     }
-                    LatLng consultLatLng = new LatLng(locationLat,locationLng);
-                    consultMarker = PaediatricianLocationTab.this.map.addMarker(new MarkerOptions().position(consultLatLng).title("Consultation last location").icon(BitmapDescriptorFactory.fromResource(R.mipmap.pickup_marker)));
-                    getRouteToMarker(consultLatLng);
+                    consultLatLng  = new LatLng(locationLat,locationLng);
+                    consultMarker = PaediatricianLocationTab.this.map.addMarker(new MarkerOptions().position(consultLatLng).title("Parent Request Location").icon(BitmapDescriptorFactory.fromResource(R.mipmap.pickup_marker)));
                 }
             }
 
@@ -404,7 +381,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     private void getAssignedParentInfo(){
         parentInfo.setVisibility(View.VISIBLE);
         call_parent.setVisibility(View.VISIBLE);
-        parentDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child("parents").child(parentId);
+        parentDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child("Parents").child(parentId);
         parentDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -421,8 +398,6 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
                         parentPhone.setText(map.get("phone").toString());
                     }
                     if (map.get("photoUrl") != null){
-
-
                         Glide.with(getActivity()).load(map.get("photoUrl").toString()).into(parentProfileImage);
                     }
                 }
@@ -463,129 +438,8 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
         }
     }
 
-   /*------------------------------------------------------------------
-   |  Function(s) checkLocationPermission, onRequestPermissionsResult
-   |
-   |  Purpose: This methods check and request permissions required for the application to run
-   |
-   |  Note:
-   |	  checkLocationPermission : Checks if the location permission has been granted for location
-   |	  onRequestPermissionsResult : requests for permission for making a phone call
-   |
-   |
-   *-------------------------------------------------------------------*/
 
-    private void checkLocationPermission() {
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle("give permission")
-                        .setMessage("give permission message")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                            }
-                        })
-                        .create()
-                        .show();
-            }
-            else{
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            }
-        }
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CALL) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                makeCall();
-            } else {
-                Toast.makeText(getActivity(), "Permission DENIED", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    /*------------------------------------------------------------------
-    |  Function(s) getRouteToMarker, onRoutingFailure, onRoutingStart, onRoutingSuccess
-    |
-    |  Purpose:  Draw the route between the parent and paediatrician
-    |
-    |  Note:
-    |	  getRouteToMarker : get the route to marker
-    |	  onRoutingFailure : Responds when routing fails
-    |	  onRoutingStart : When routing starts
-    |	  onRoutingSuccess : When routing was successful
-    |
-    *-------------------------------------------------------------------*/
-    private void getRouteToMarker(LatLng consultLatLng) {
-
-          Routing routing = new Routing.Builder()
-                  .key("AIzaSyDJRGrs2-HETD0U3khyb2lAf3axA-CBl9I")
-                  .travelMode(AbstractRouting.TravelMode.DRIVING)
-                  .withListener(this)
-                  .alternativeRoutes(false)
-                  .waypoints(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()), consultLatLng)
-                  .build();
-          routing.execute();
-
-    }
-
-    @Override
-    public void onRoutingFailure(RouteException e) {
-
-        if(e != null) {
-            Toast.makeText(getActivity(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }else {
-            Toast.makeText(getActivity(), "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onRoutingStart() {
-
-    }
-
-    @Override
-    public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
-
-        if(polylines.size()>0) {
-            for (Polyline poly : polylines) {
-                poly.remove();
-            }
-        }
-
-        polylines = new ArrayList<>();
-        //add route(s) to the map.
-        for (int i = 0; i <route.size(); i++) {
-
-            //In case of more than 5 alternative routes
-            int colorIndex = i % COLORS.length;
-
-            PolylineOptions polyOptions = new PolylineOptions();
-            polyOptions.color(getResources().getColor(COLORS[colorIndex]));
-            polyOptions.width(10 + i * 3);
-            polyOptions.addAll(route.get(i).getPoints());
-            Polyline polyline = map.addPolyline(polyOptions);
-            polylines.add(polyline);
-
-            Toast.makeText(getActivity(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+ route.get(i).getDurationValue(),Toast.LENGTH_SHORT).show();
-        }
-
-    }
-
-    @Override
-    public void onRoutingCancelled() {
-
-    }
-
-    private void erasePolyLines(){
-        for (Polyline line: polylines){
-            line.remove();
-        }
-        polylines.clear();
-    }
 
     /*------------------------------------------------------------------
     |  Function(s) endConsult, recordConsult
@@ -596,15 +450,12 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
 
     private  void endConsult(){
 
-        consult_status.setText("pick parent");
-        erasePolyLines();
+        consult_status.setText("Start Consultation");
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 
-        DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(userId).child("parentRequest");
+        DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(userId).child("parentRequest");
         paediatricianRef.removeValue();
-
-        consultTime = 0;
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("parentRequest");
         GeoFire geoFire = new GeoFire(ref);
@@ -632,9 +483,9 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     private void recordConsult(){
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        DatabaseReference parentRef = FirebaseDatabase.getInstance().getReference().child("Users").child("parents").child(parentId).child("history");
+        DatabaseReference parentRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Parents").child(parentId).child("history");
 
-        DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(userId).child("history");
+        DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(userId).child("history");
 
         DatabaseReference historyRef = FirebaseDatabase.getInstance().getReference().child("history");
 
@@ -646,8 +497,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
         HashMap map = new HashMap();
         map.put("paediatrician", userId);
         map.put("parent", parentId);
-        map.put("rating", 0);
-        map.put("consultTime", consultTime);
+        map.put("consultLocation", consultLatLng.toString());
         map.put("timestamp", getCurrentTimestamp());
 
         historyRef.child(requestId).updateChildren(map);
@@ -677,11 +527,7 @@ public class PaediatricianLocationTab extends Fragment implements OnMapReadyCall
     @Override
     public void onStop() {
         super.onStop();
-        if (!isLoggingOut){
-
             disconnectPaediatrician();
-        }
-
     }
 
     @Override

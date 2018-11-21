@@ -48,7 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ParentLocationTab extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+public class
+ParentLocationTab extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
       /*-----------------------------------------------------------------------------
        |  Class: ParentLocationTab
@@ -87,6 +88,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
         //Initialize fragment variables
         destinationLatLng = new LatLng(0.0,0.0);
         parentRequest = (Button)  rootView.findViewById(R.id.request);
+
         paediatricianInfo = (LinearLayout) rootView.findViewById(R.id.paediatricianInfo);
         paediatricianName = (TextView) rootView.findViewById(R.id.paediatricianName);
         paediatricianPhone = (TextView) rootView.findViewById(R.id.paediatricianPhone);
@@ -167,7 +169,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
                     paediatricianFound = true;
                     paediatricianFoundID = key;
 
-                    DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianFoundID).child("parentRequest");
+                    DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(paediatricianFoundID).child("parentRequest");
                     String parentId = FirebaseAuth.getInstance().getCurrentUser().getUid();
                     HashMap map = new HashMap();
                     map.put("parentConsultId", parentId);
@@ -268,7 +270,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
     private void getPaediatricianInfo(){
         paediatricianInfo.setVisibility(View.VISIBLE);
 
-        DatabaseReference paediatricianDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianFoundID);
+        DatabaseReference paediatricianDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(paediatricianFoundID);
         paediatricianDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -285,7 +287,6 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
                         paediatricianPhone.setText(map.get("phone").toString());
                     }
                     if (map.get("photoUrl") != null){
-
 
                         Glide.with(getActivity()).load(map.get("profileImageUrl").toString()).into(paediatricianProfileImage);
                     }
@@ -309,7 +310,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
     private ValueEventListener paediatricianHasEndedRefListener;
 
     private void getHasConsultEnded(){
-        consultHasEndedRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianFoundID).child("parentRequest").child("parentConsultId");
+        consultHasEndedRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(paediatricianFoundID).child("parentRequest").child("parentConsultId");
         paediatricianHasEndedRefListener = consultHasEndedRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -335,7 +336,7 @@ public class ParentLocationTab extends Fragment implements OnMapReadyCallback, G
         consultHasEndedRef.removeEventListener(paediatricianHasEndedRefListener);
 
         if (paediatricianFoundID != null){
-            DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("paediatricians").child(paediatricianFoundID).child("parentRequest");
+            DatabaseReference paediatricianRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Paediatricians").child(paediatricianFoundID).child("parentRequest");
             paediatricianRef.removeValue();
             paediatricianFoundID = null;
         }
