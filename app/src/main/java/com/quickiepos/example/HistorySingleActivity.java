@@ -87,8 +87,8 @@ public class HistorySingleActivity extends AppCompatActivity   {
                                         if(map.get("phone") != null){
                                             parentPhone.setText(map.get("phone").toString());
                                         }
-                                        if(map.get("profileImageUrl") != null){
-                                            Glide.with(getApplication()).load(map.get("profileImageUrl").toString()).into(parentImage);
+                                        if(map.get("photoUrl") != null){
+                                            Glide.with(getApplication()).load(map.get("photoUrl").toString()).into(parentImage);
                                         }
                                     }
 
@@ -114,8 +114,8 @@ public class HistorySingleActivity extends AppCompatActivity   {
                                         if(map.get("phone") != null){
                                             paediatricianPhone.setText(map.get("phone").toString());
                                         }
-                                        if(map.get("profileImageUrl") != null){
-                                            Glide.with(getApplication()).load(map.get("profileImageUrl").toString()).into(paediatricianImage);
+                                        if(map.get("photoUrl") != null){
+                                            Glide.with(getApplication()).load(map.get("photoUrl").toString()).into(paediatricianImage);
                                         }
                                     }
 
